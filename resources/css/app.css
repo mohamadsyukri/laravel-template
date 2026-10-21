@@ -1,0 +1,52 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import 'bootstrap-icons/font/bootstrap-icons.min.css';
+@import 'datatables.net-bs5/css/dataTables.bootstrap5.min.css';
+@import 'select2/dist/css/select2.min.css';
+@import 'select2-bootstrap-5-theme/dist/select2-bootstrap-5-theme.min.css';
+
+/* App shell: sidebar on the left (an offcanvas below lg), content on the right. */
+:root {
+    --app-sidebar-width: 250px;
+}
+
+body {
+    background-color: var(--bs-tertiary-bg);
+}
+
+.app-sidebar {
+    width: var(--app-sidebar-width);
+}
+
+@media (min-width: 992px) {
+    .app-sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+        flex-shrink: 0;
+    }
+}
+
+.app-sidebar .nav-link {
+    color: var(--bs-body-color);
+    border-radius: var(--bs-border-radius);
+}
+
+.app-sidebar .nav-link:hover:not(.active) {
+    background-color: var(--bs-secondary-bg);
+}
+
+.app-sidebar .nav-link.active {
+    background-color: var(--bs-primary);
+    color: #fff;
+}
+
+/* Stops wide tables from pushing the layout sideways. */
+.app-main {
+    min-width: 0;
+}
+
+/* Guest pages (sign in, password reset). */
+.guest-card {
+    max-width: 420px;
+}
