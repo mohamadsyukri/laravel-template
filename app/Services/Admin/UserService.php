@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Admin;
 
 use App\Models\User;
+use App\Support\Access\AccessAudit;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,8 @@ use Illuminate\Support\Str;
 
 final readonly class UserService
 {
+    public function __construct(private AccessAudit $audit) {}
+
     /**
      * @return Builder<User>
      */
@@ -28,6 +31,7 @@ final readonly class UserService
         return DB::transaction(function () use ($data): User {
             $user = User::query()->create(Arr::except($data, ['roles']));
             $user->syncRoles($data['roles']);
+            $this->audit->userRoles($user, [], $data['roles']);
 
             return $user;
         });
@@ -53,7 +57,9 @@ final readonly class UserService
                 $user->setRememberToken(Str::random(60));
             }
             $user->save();
+            $oldRoles = $user->roles()->pluck('name')->all();
             $user->syncRoles($data['roles']);
+            $this->audit->userRoles($user, $oldRoles, $data['roles']);
 
             return $user;
         });

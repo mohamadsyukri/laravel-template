@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Admin;
 
 use App\Models\Menu;
+use App\Support\Access\AccessAudit;
 use App\Support\Access\PermissionName;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -15,6 +16,8 @@ use Spatie\Permission\Models\Role;
 
 final readonly class RoleService
 {
+    public function __construct(private AccessAudit $audit) {}
+
     /**
      * @return Builder<Role>
      */
@@ -31,6 +34,7 @@ final readonly class RoleService
         return DB::transaction(function () use ($data): Role {
             $role = Role::create(['name' => $data['name'], 'guard_name' => 'web']);
             $role->syncPermissions($data['permissions']);
+            $this->audit->roleCreated($role);
 
             return $role;
         });
@@ -42,8 +46,11 @@ final readonly class RoleService
     public function update(Role $role, array $data): Role
     {
         return DB::transaction(function () use ($role, $data): Role {
+            $oldName = $role->name;
+            $oldPermissions = $role->permissions()->pluck('name')->all();
             $role->update(['name' => $data['name']]);
             $role->syncPermissions($data['permissions']);
+            $this->audit->roleUpdated($role, $oldName, $oldPermissions);
 
             return $role;
         });
@@ -67,7 +74,10 @@ final readonly class RoleService
 
     public function delete(Role $role): void
     {
-        $role->delete();
+        DB::transaction(function () use ($role): void {
+            $this->audit->roleDeleted($role);
+            $role->delete();
+        });
     }
 
     public function isSuperAdmin(Role $role): bool
