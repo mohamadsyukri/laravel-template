@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 final readonly class UserService
 {
@@ -45,7 +46,13 @@ final readonly class UserService
                 $attributes['password'] = $data['password'];
             }
 
-            $user->update($attributes);
+            $wasActive = $user->is_active;
+            $user->fill($attributes);
+            // Deactivation also ends every "Remember me" sign-in: the cookie no longer matches a new token.
+            if ($wasActive && ! $user->is_active) {
+                $user->setRememberToken(Str::random(60));
+            }
+            $user->save();
             $user->syncRoles($data['roles']);
 
             return $user;
