@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\User;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -34,8 +36,23 @@ final class RoleRequest extends FormRequest
         return [
             'name' => $nameRules,
             'permissions' => ['array'],
-            'permissions.*' => ['string', 'exists:permissions,name'],
+            'permissions.*' => ['bail', 'string', 'exists:permissions,name', $this->grantablePermission()],
         ];
+    }
+
+    /**
+     * No escalation (User::mayGrantPermission): without this, holding admin.roles.edit was enough to
+     * grant your own role every permission.
+     */
+    private function grantablePermission(): Closure
+    {
+        return function (string $attribute, mixed $value, Closure $fail): void {
+            /** @var User $actor */
+            $actor = $this->user();
+            if (! $actor->mayGrantPermission($value)) {
+                $fail(__('You cannot grant a permission you do not hold yourself.'));
+            }
+        };
     }
 
     /**

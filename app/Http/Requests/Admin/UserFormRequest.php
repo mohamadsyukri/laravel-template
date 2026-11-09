@@ -4,16 +4,39 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\User;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
+use Spatie\Permission\Models\Role;
 
 /**
  * Shared pieces of the create- and edit-user forms.
  */
 abstract class UserFormRequest extends FormRequest
 {
+    /**
+     * Opening the screen is checked by AuthorizeRoute; editing another account by UserPolicy on the
+     * route; each role handed out by grantableRole().
+     */
     public function authorize(): bool
     {
         return true;
+    }
+
+    /**
+     * No escalation (User::mayGrantRole): refuse a role that grants more than the signed-in user
+     * holds. Runs after `exists`, under `bail`, so the role is always found.
+     */
+    protected function grantableRole(): Closure
+    {
+        return function (string $attribute, mixed $value, Closure $fail): void {
+            /** @var User $actor */
+            $actor = $this->user();
+            $role = Role::query()->with('permissions')->where('name', $value)->first();
+            if ($role !== null && ! $actor->mayGrantRole($role)) {
+                $fail(__('You cannot assign the :role role; it grants more than your own access.', ['role' => $role->name]));
+            }
+        };
     }
 
     /**

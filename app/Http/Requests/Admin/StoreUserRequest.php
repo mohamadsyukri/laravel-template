@@ -20,7 +20,7 @@ final class StoreUserRequest extends UserFormRequest
             'password' => ['required', 'confirmed', Password::defaults()],
             'is_active' => ['boolean'],
             'roles' => ['required', 'array', 'min:1'],
-            'roles.*' => ['string', 'exists:roles,name'],
+            'roles.*' => ['bail', 'string', 'exists:roles,name', $this->grantableRole()],
         ];
     }
 

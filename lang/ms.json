@@ -119,7 +119,9 @@
     "View": "Papar",
     "Welcome, :name": "Selamat datang, :name",
     "Yes, continue": "Ya, teruskan",
+    "You cannot assign the :role role; it grants more than your own access.": "Anda tidak boleh memberikan peranan :role kerana ia memberi capaian melebihi capaian anda sendiri.",
     "You cannot deactivate your own account.": "Anda tidak boleh menyahaktifkan akaun anda sendiri.",
+    "You cannot grant a permission you do not hold yourself.": "Anda tidak boleh memberikan kebenaran yang anda sendiri tidak miliki.",
     "You cannot remove your own :role role.": "Anda tidak boleh membuang peranan :role anda sendiri.",
     "Your account is inactive. Please contact the administrator.": "Akaun anda tidak aktif. Sila hubungi pentadbir sistem.",
     "Your password has been changed.": "Kata laluan anda telah ditukar."
